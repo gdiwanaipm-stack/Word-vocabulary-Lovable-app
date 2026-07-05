@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Practice from "./pages/Practice";
@@ -12,6 +14,19 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+function useEnsureAnonSession() {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        supabase.auth.signInAnonymously().catch((e) =>
+          console.error("Anonymous sign-in failed:", e)
+        );
+      }
+    });
+  }, []);
+}
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
