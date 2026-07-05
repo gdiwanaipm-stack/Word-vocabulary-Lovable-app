@@ -65,12 +65,21 @@ export function SessionFeedbackDialog({ open, onClose, sessionData }: SessionFee
 
     setIsSubmitting(true);
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) {
+        toast.error("Please sign in to submit feedback");
+        setIsSubmitting(false);
+        return;
+      }
       const { error } = await supabase.from("session_feedback").insert({
+        user_id: userId,
         likes: likes.trim() || null,
         improvements: improvements.trim() || null,
       });
 
       if (error) throw error;
+
 
       toast.success("Thanks for your feedback!");
       setLikes("");
