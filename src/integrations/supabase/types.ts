@@ -51,7 +51,7 @@ export type Database = {
           improvements: string | null
           likes: string | null
           session_date: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -59,7 +59,7 @@ export type Database = {
           improvements?: string | null
           likes?: string | null
           session_date?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -67,7 +67,7 @@ export type Database = {
           improvements?: string | null
           likes?: string | null
           session_date?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
