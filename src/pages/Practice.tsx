@@ -56,6 +56,7 @@ export default function Practice() {
   
   const ATTEMPTS_PER_WORD = 2;
   const totalAttempts = words.length * ATTEMPTS_PER_WORD;
+  const dueReviewCount = getDueReviewCount();
 
   const handleComplete = async (isCorrect: boolean) => {
     const currentWordId = words[currentIndex].id;
