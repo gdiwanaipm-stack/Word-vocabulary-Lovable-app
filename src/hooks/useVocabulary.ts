@@ -107,6 +107,21 @@ export function useVocabulary() {
       }]);
     }
 
+    // Spaced review: a word still missed on the final pass comes back in 3 days;
+    // a scheduled review word answered correctly on the final pass is mastered.
+    if (isFinalAttempt) {
+      if (!isCorrect) {
+        const dueDate = format(addDays(new Date(), REVIEW_INTERVAL_DAYS), 'yyyy-MM-dd');
+        setUserProgress(prev => prev.map(p =>
+          p.wordId === wordId ? { ...p, reviewDue: dueDate } : p
+        ));
+      } else if (existingProgress?.reviewDue) {
+        setUserProgress(prev => prev.map(p =>
+          p.wordId === wordId ? { ...p, reviewDue: undefined } : p
+        ));
+      }
+    }
+
     const todayProgress = dailyProgress.find(d => d.date === today);
     if (todayProgress) {
       setDailyProgress(prev => prev.map(d =>
