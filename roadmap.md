@@ -7,4 +7,4 @@
 - [x] Prioritize due review words in daily practice queue
 - [x] Practice UI: "N review words due" badge + missed-words note on completion screen
 - [x] Verify build + typecheck (build OK)
-- [ ] End-to-end check in live preview
+- [x] End-to-end check in live preview (due word served first, badge shown, missed word scheduled +3 days)
