@@ -28,7 +28,7 @@ function incrementSessionCount(): number {
 
 export default function Practice() {
   const navigate = useNavigate();
-  const { getTodaysWords, updateProgress, checkAndProgressDifficulty, toggleDifficultWord, isWordDifficult, loading, settings } = useVocabulary();
+  const { getTodaysWords, updateProgress, checkAndProgressDifficulty, toggleDifficultWord, isWordDifficult, getDueReviewCount, loading, settings } = useVocabulary();
   const { 
     wordsPracticedToday,
     isDailyLimitReached, 
@@ -51,14 +51,21 @@ export default function Practice() {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [newDifficulty, setNewDifficulty] = useState<string>('');
   const [completedScore, setCompletedScore] = useState(0);
+  const [missedWords, setMissedWords] = useState<string[]>([]);
+  
   
   const ATTEMPTS_PER_WORD = 2;
   const totalAttempts = words.length * ATTEMPTS_PER_WORD;
+  const dueReviewCount = getDueReviewCount();
 
   const handleComplete = async (isCorrect: boolean) => {
     const currentWordId = words[currentIndex].id;
-    await updateProgress(currentWordId, isCorrect);
+    const isFinalPass = currentAttempt === ATTEMPTS_PER_WORD;
+    await updateProgress(currentWordId, isCorrect, isFinalPass);
     if (isCorrect) setScore(prev => prev + 1);
+    if (isFinalPass && !isCorrect) {
+      setMissedWords(prev => [...new Set([...prev, words[currentIndex].word])]);
+    }
     
     // Track word completion for usage limits (only on first attempt)
     if (currentAttempt === 1) {
@@ -115,6 +122,7 @@ export default function Practice() {
     setShowProgressionDialog(false);
     setShowFeedbackDialog(false);
     setNewDifficulty('');
+    setMissedWords([]);
     resetSession(); // Reset session-based limits (hints)
   };
 
@@ -205,6 +213,11 @@ export default function Practice() {
                   ? "Perfect score! You're a vocabulary champion! ⚽" 
                   : "Great effort! Keep practicing to improve your score!"}
               </p>
+              {missedWords.length > 0 && (
+                <p className="text-sm text-muted-foreground bg-accent/50 rounded-lg px-3 py-2">
+                  🎯 {missedWords.length} word{missedWords.length > 1 ? 's' : ''} to review: <strong>{missedWords.join(', ')}</strong> — they'll be back for another try in 3 days!
+                </p>
+              )}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button onClick={handlePracticeMore} size="lg">
                   Practice More Words
@@ -246,8 +259,11 @@ export default function Practice() {
           </div>
           
           {/* Usage stats bar */}
-          <div className="flex items-center justify-center text-xs text-muted-foreground bg-accent/50 px-3 py-2 rounded-lg">
+          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground bg-accent/50 px-3 py-2 rounded-lg">
             <span>Today: {wordsPracticedToday}/{limits.MAX_WORDS_PER_DAY} words</span>
+            {dueReviewCount > 0 && (
+              <span className="font-medium text-primary">🔄 {dueReviewCount} review word{dueReviewCount > 1 ? 's' : ''} due</span>
+            )}
           </div>
 
           <div className="w-full bg-accent rounded-full h-2">

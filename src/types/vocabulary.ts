@@ -20,6 +20,7 @@ export interface UserProgress {
   startDate: string;
   completionWeeks: number;
   difficult?: boolean;
+  reviewDue?: string;
 }
 
 export interface DailyProgress {
