@@ -6,4 +6,5 @@
 - [x] Clear review when a due word is answered correctly on final pass
 - [x] Prioritize due review words in daily practice queue
 - [x] Practice UI: "N review words due" badge + missed-words note on completion screen
-- [ ] Verify build + typecheck
+- [x] Verify build + typecheck (build OK)
+- [ ] End-to-end check in live preview
