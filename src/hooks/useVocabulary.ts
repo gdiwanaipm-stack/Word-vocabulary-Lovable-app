@@ -19,12 +19,30 @@ const DIFFICULTY_PROGRESSION: { [key: string]: string } = {
 
 const PROGRESSION_THRESHOLD = 0.25;
 const MIN_WORDS_FOR_PROGRESSION = 15;
+const REVIEW_INTERVAL_DAYS = 3;
+const MAX_ROUND_WORDS = 2;
 
 export function useVocabulary() {
   const [settings, setSettings] = useLocalStorage<UserSettings>('vocab-settings', defaultSettings);
   const [userProgress, setUserProgress] = useLocalStorage<UserProgress[]>('vocab-progress', []);
   const [dailyProgress, setDailyProgress] = useLocalStorage<DailyProgress[]>('vocab-daily', []);
   const [weeklyProgress, setWeeklyProgress] = useLocalStorage<WeeklyProgress[]>('vocab-weekly', []);
+
+  const getDueReviewWords = (excludeWordIds: string[] = []) => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const excluded = new Set(excludeWordIds);
+    const dueIds = new Set(
+      userProgress
+        .filter(p => p.reviewDue && p.reviewDue <= today && !excluded.has(p.wordId))
+        .map(p => p.wordId)
+    );
+    return vocabularyWords
+      .filter(w => dueIds.has(w.id) && w.gradeLevel === settings.gradeLevel)
+      .sort(() => Math.random() - 0.5);
+  };
+
+  const getDueReviewCount = (excludeWordIds: string[] = []) =>
+    getDueReviewWords(excludeWordIds).length;
 
   const getTodaysWords = (excludeWordIds: string[] = []) => {
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -48,17 +66,22 @@ export function useVocabulary() {
     // Shuffle available words to randomize selection
     const shuffled = [...availableWords].sort(() => Math.random() - 0.5);
     
-    // If all words at this difficulty are completed today, shuffle all and return 2
+    // If all words at this difficulty are completed today, prefer due review words
     if (shuffled.length === 0) {
       const allShuffled = [...filtered].sort(() => Math.random() - 0.5);
-      return allShuffled.slice(0, 2);
+      const dueWords = getDueReviewWords(excludeWordIds);
+      const combined = [...dueWords, ...allShuffled];
+      const unique = combined.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
+      return unique.slice(0, MAX_ROUND_WORDS);
     }
     
-    // Return next 2 random unpracticed words
-    return shuffled.slice(0, 2);
+    // Prioritize words due for spaced review, then fill the rest with fresh words
+    const dueWords = getDueReviewWords(excludeWordIds).slice(0, MAX_ROUND_WORDS);
+    const freshWords = shuffled.filter(w => !dueWords.some(d => d.id === w.id));
+    return [...dueWords, ...freshWords].slice(0, MAX_ROUND_WORDS);
   };
 
-  const updateProgress = (wordId: string, isCorrect: boolean) => {
+  const updateProgress = (wordId: string, isCorrect: boolean, isFinalAttempt: boolean = true) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     
     const existingProgress = userProgress.find(p => p.wordId === wordId);
@@ -240,6 +263,8 @@ export function useVocabulary() {
     dailyProgress,
     weeklyProgress,
     getTodaysWords,
+    getDueReviewWords,
+    getDueReviewCount,
     updateProgress,
     getCurrentWeekProgress,
     getLearnedWords,
