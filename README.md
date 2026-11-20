@@ -1,5 +1,5 @@
 # Word vocabulary app with Lovable
-This is a word vocabulary app designed for elementary and middle school kids to help them build proficiency in learning new words and their meaning. It is created in soccer setup to help them meet their "GOAL". The app is designed to encourage learning and motivate them.
+This is a word vocabulary app designed for elementary and middle school kids to help them build proficiency in learning new words and their meaning. It is created in soccer setup to help them meet their "GOAL". The app is designed to encourage learning and motivate them. (My son likes soccer so it was designed to help him improve his vocab)
 
 ## Project
 
